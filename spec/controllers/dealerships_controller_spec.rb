@@ -127,4 +127,66 @@ RSpec.describe DealershipsController, type: :controller do
       expect(assigns(:dealership).id).to eq(dealership.id)
     end
   end
+
+  describe 'PUT #update' do
+    it "sets the dealership instance variable" do
+      put :update, { id: dealership.id, dealership: { name: 'new name' }}
+      expect(assigns(:dealership).id).to eq(dealership.id)
+    end
+
+    it "updates the dealership" do
+      put :update, { id: dealership.id, dealership: { name: 'new name' }}
+      expect(dealership.reload.name).to eq('new name')
+    end
+
+    it 'sets a flash message on success' do
+      put :update, { id: dealership.id, dealership: { name: 'new name' }}
+      expect(flash[:success]).to eq('Dealership Updated!')
+    end
+
+    it 'redirects to show on success' do
+      put :update, { id: dealership.id, dealership: { name: 'new name' }}
+      expect(response).to redirect_to(dealership_path(dealership.id))
+    end
+
+    describe 'update failures' do
+      before(:each) do
+        Dealership.create(name: 'DealerName', inventory: '30000')
+      end
+
+      it 'renders edit on fail' do
+        put :update, { id: dealership.id, dealership: { name: 'DealerName', inventory: nil} }
+        expect(response).to render_template(:edit)
+      end
+
+      it 'sets flash message on error' do
+        put :update, { id: dealership.id, dealership: { name: 'Dealer', inventory: nil } }
+        expect(flash[:error]).to eq('Dealership failed to update!')
+      end
+    end
+  end
+
+  describe 'DELETE #destroy' do
+    it 'sets the dealership instance variable' do
+      delete :destroy, id: dealership.id
+      expect(assigns(:dealership)).to eq(dealership)
+    end
+
+    it 'destroys the dealership' do
+      dealership
+      expect(Dealership.count).to eq(1)
+      delete :destroy, id: dealership.id
+      expect(Dealership.count).to eq(0)
+    end
+
+    it 'sets the flash message' do
+      delete :destroy, id: dealership.id
+      expect(flash[:success]).to eq("Dealership Deleted!")
+    end
+
+    it 'redirects to index path after destroy' do
+      delete :destroy, id: dealership.id
+      expect(response).to redirect_to(dealerships_path)
+    end
+  end
 end
